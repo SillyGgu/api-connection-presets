@@ -33,6 +33,14 @@ function selectedPreset() {
     return settings.presets.find(preset => preset.id === settings.selectedId);
 }
 
+function isCustomActive() {
+    return $(selectors.main).val() === 'openai' && $(selectors.source).val() === 'custom';
+}
+
+function updateVisibility() {
+    $('#acp-panel').prop('hidden', !isCustomActive());
+}
+
 function setStatus(message, kind = '') {
     $('#acp-status').text(message).attr('data-kind', kind);
 }
@@ -87,12 +95,10 @@ function commitEditor() {
 
 function applyPreset({ quiet = false } = {}) {
     const preset = selectedPreset();
-    if (!preset) return;
+    if (!preset || !isCustomActive()) return;
     if (!document.querySelector(selectors.url)) return;
     restoring = true;
     try {
-        if ($(selectors.main).val() !== 'openai') $(selectors.main).val('openai').trigger('change');
-        if ($(selectors.source).val() !== 'custom') $(selectors.source).val('custom').trigger('change');
         $(selectors.url).val(preset.url).trigger('input');
         $(selectors.model).val(preset.model).trigger('input');
         $(selectors.processing).val(preset.processing || '').trigger('change');
@@ -114,7 +120,8 @@ function scheduleRestore() {
     pendingRestore = setTimeout(async () => {
         try {
             await getPresetApplicationPromise();
-            if (settings.autoRestore && selectedPreset()) applyPreset({ quiet: true });
+            updateVisibility();
+            if (settings.autoRestore && selectedPreset() && isCustomActive()) applyPreset({ quiet: true });
         } catch (error) {
             console.warn(`[${extensionName}] Could not restore connection after preset change`, error);
         }
@@ -145,6 +152,7 @@ function mount() {
         </section>`);
     $(selectors.source).after($panel);
     refresh();
+    updateVisibility();
 
     $('#acp-select').on('change', function () {
         settings.selectedId = this.value;
@@ -185,6 +193,7 @@ function mount() {
         save();
     });
     $(selectors.stPreset).on('change.apiConnectionPresets', scheduleRestore);
+    $(`${selectors.main}, ${selectors.source}`).on('input.apiConnectionPresets change.apiConnectionPresets', updateVisibility);
     if (settings.autoRestore && selectedPreset()) scheduleRestore();
 }
 
@@ -194,5 +203,8 @@ jQuery(async () => {
     settings.selectedId ||= '';
     settings.autoRestore ??= true;
     mount();
-    eventSource.on(event_types.APP_READY, scheduleRestore);
+    eventSource.on(event_types.APP_READY, () => {
+        updateVisibility();
+        scheduleRestore();
+    });
 });

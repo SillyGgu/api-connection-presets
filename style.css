@@ -9,6 +9,7 @@
     color: var(--SmartThemeBodyColor, inherit);
     font: inherit;
 }
+#acp-panel[hidden] { display: none !important; }
 #acp-panel * { box-sizing: border-box; }
 #acp-panel .acp-heading, #acp-panel .acp-main-row, #acp-panel .acp-tools, #acp-panel .acp-editor-row { display: flex; align-items: center; gap: 6px; }
 #acp-panel .acp-heading { justify-content: space-between; margin-bottom: 8px; font-size: .89em; font-weight: 700; }
