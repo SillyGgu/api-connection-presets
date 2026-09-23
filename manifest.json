@@ -1,0 +1,11 @@
+{
+    "display_name": "API 연결 프리셋",
+    "loading_order": 213,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "SillyGgu",
+    "version": "1.0.0",
+    "homePage": ""
+}
